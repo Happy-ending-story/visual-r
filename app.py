@@ -1,4 +1,3 @@
-# 앱 세팅 
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
@@ -11,29 +10,10 @@ import re
 from io import BytesIO
 from matplotlib import font_manager
 
-def fig_to_bytes(fig, fmt="png", dpi=200, transparent=False):
-    buf = BytesIO()
-    fig.savefig(buf, format=fmt, dpi=dpi, bbox_inches="tight", transparent=transparent)
-    buf.seek(0)
-    return buf
-
-# 한글 폰트 설정
-try:
-    font_path = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
-    font_candidates = [f for f in font_path if "NotoSansCJK" in f or "Noto Sans CJK" in f]
-    if font_candidates:
-        matplotlib.rcParams['font.family'] = font_manager.FontProperties(fname=font_candidates[0]).get_name()
-    else:
-        matplotlib.rcParams['font.family'] = 'Malgun Gothic'
-except:
-    matplotlib.rcParams['font.family'] = 'Malgun Gothic'
-
-matplotlib.rcParams['axes.unicode_minus'] = False
-
 st.markdown(" 본 시각화 툴은 고려대학교 경제학과 진리장학 학부연구과정의 결과물임을 명시합니다.  \n지도교수 : 한 치 록 · 학부연구생 : 정 보 현")
 
 st.title("회귀모형 시각화 툴")
-#데이터 추출
+
 st.markdown("### 📋 회귀 결과 추출용 R 코드")
 st.caption(" 복사한 코드를 R에서 실행하면 시각화에 적합한 데이터 파일이 생성됩니다.")
 r_code = """if (!require("broom"))  install.packages("broom")
@@ -43,17 +23,13 @@ library(broom); library(dplyr); library(readr)
 
 if (!exists("model")) stop("먼저 model <- lm(...) 등으로 회귀모형을 적합하세요.")
 
-# 종속변수명
 dep_var <- names(model.frame(model))[1]
 
-# 모델에 사용된 데이터프레임 확보
 df_used <- as.data.frame(model.frame(model))
 
-# R^2
 glance_tbl <- glance(model) %>%
   dplyr::transmute(r_squared = r.squared)
 
-# ====== summary 스타일 계수표 (t-value 제거) ======
 ct <- summary(model)$coefficients
 
 coef_tbl <- data.frame(
@@ -66,7 +42,6 @@ coef_tbl <- data.frame(
   check.names = FALSE
 )
 
-# 95% 신뢰구간
 ci <- confint(model, level = 0.95)
 ci_tbl <- data.frame(
   term      = rownames(ci),
@@ -76,30 +51,27 @@ ci_tbl <- data.frame(
   check.names = FALSE
 )
 
-# 병합: 계수 + CI
 tidy_model <- dplyr::left_join(coef_tbl, ci_tbl, by = "term")
 
-# ====== 기존 q1, q3 계산(설명변수용) 유지 ======
 num_cols <- names(df_used)[sapply(df_used, is.numeric)]
 feature_cols <- setdiff(num_cols, dep_var)
 
 if (length(feature_cols) == 0) {
-  q_tbl <- data.frame(term=character(0), q1=double(0), q3=double(0))
+  q_tbl <- data.frame(term=character(0), q1=double(0), q7=double(0))
 } else {
   q_list <- lapply(feature_cols, function(v) {
     x <- df_used[[v]]
     x <- x[is.finite(x)]
-    if (length(x) == 0) return(data.frame(term=v, q1=NA_real_, q3=NA_real_))
+    if (length(x) == 0) return(data.frame(term=v, q1=NA_real_, q7=NA_real_))
     data.frame(
       term = v,
       q1 = as.numeric(stats::quantile(x, 0.125, na.rm = TRUE)),
-      q3 = as.numeric(stats::quantile(x, 0.875, na.rm = TRUE))
+      q7 = as.numeric(stats::quantile(x, 0.875, na.rm = TRUE))
     )
   })
   q_tbl <- dplyr::bind_rows(q_list)
 }
 
-# 병합 및 저장
 export_tbl <- dplyr::left_join(tidy_model, q_tbl, by = "term")
 export_tbl$r_squared <- glance_tbl$r_squared
 
@@ -126,7 +98,6 @@ st.markdown("""
 - 저장 경로를 직접 확인하려면 R에서 다음 명령을 실행해보세요. **getwd()**
 """)
 
-# --- 업로드 및 시각화 ---
 uploaded_file = st.file_uploader("📁 회귀 결과 CSV 파일 업로드", type=["csv"])
 
 if uploaded_file is not None:
@@ -150,8 +121,9 @@ if uploaded_file is not None:
         "회귀모형 유형 선택",
         ["선형모형", "제곱항 모형", "상호작용항 모형", "제곱항 + 상호작용항 모형"]
     )
-    selected_terms = st.multiselect("시각화 변수 선택: 평면(가로축 변수) / 입체(가로·세로축 변수)", all_terms)
-    if len(selected_terms) > 2:
+    base_vars = st.multiselect("시각화 변수 선택: 평면(가로축 변수) / 입체(가로·세로축 변수)", all_terms)
+
+    if len(base_vars) > 2:
         st.error("시각화는 최대 2개의 설명변수까지 지원됩니다.")
         st.stop()
 
@@ -161,10 +133,10 @@ if uploaded_file is not None:
     dummy_values = [0, 1]
 
     if model_type in ["제곱항 모형", "제곱항 + 상호작용항 모형"]:
-        squared_vars = st.multiselect("제곱항 선택 (예: age^2)", [t for t in all_terms if t not in selected_terms])
+        squared_vars = st.multiselect("제곱항 선택 (예: age^2)", [t for t in all_terms if t not in base_vars])
         squared_mapping = {}
         for sq_var in squared_vars:
-            base = st.selectbox(f"➡️ '{sq_var}'은(는) 어떤 변수의 제곱인가요?", [t for t in selected_terms if t not in squared_vars], key=f"base_{sq_var}")
+            base = st.selectbox(f"➡️ '{sq_var}'은(는) 어떤 변수의 제곱인가요?", [t for t in base_vars if t not in squared_vars], key=f"base_{sq_var}")
             squared_mapping[sq_var] = base
             
     if model_type in ["선형모형", "제곱항 모형", "상호작용항 모형", "제곱항 + 상호작용항 모형"]:
@@ -187,9 +159,9 @@ if uploaded_file is not None:
             dummy_vars = []
             
         if model_type in ["상호작용항 모형", "제곱항 + 상호작용항 모형"]:
-            interaction_candidates = selected_terms + dummy_vars
+            interaction_candidates = base_vars + dummy_vars
 
-            interaction_vars = st.multiselect("상호작용항 선택", [t for t in all_terms if t not in selected_terms])
+            interaction_vars = st.multiselect("상호작용항 선택", [t for t in all_terms if t not in base_vars])
 
             interaction_mapping = {}
             for inter_var in interaction_vars:
@@ -199,8 +171,6 @@ if uploaded_file is not None:
                 with col2:
                     var2 = st.selectbox(f"➡️ '{inter_var}'의 두 번째 항", [t for t in interaction_candidates if t != inter_var and t != var1], key=f"inter2_{inter_var}")
                 interaction_mapping[inter_var] = (var1, var2)
-
-    base_vars = [t for t in selected_terms if t not in squared_vars + interaction_vars]
 
     st.markdown("### 📐 회귀분석요약")
 
@@ -239,24 +209,20 @@ if uploaded_file is not None:
     st.markdown(f"- **종속변수:** {dep_var}")
     st.markdown(f"- **설명변수:** {', '.join(base_vars)}")
 
-    # 변수 범위 설정
-    # ✅ 범위 입력 (q1/q3 있으면 기본값으로 사용, 없으면 0~10)
     def get_initial_range(var, df, default=(0.0, 10.0)):
         try:
-            # q1/q3 컬럼이 있고, 해당 term이 존재할 때만 시도
-            if {"term", "q1", "q3"}.issubset(df.columns):
+            if {"term", "q1", "q7"}.issubset(df.columns):
                 mask = df["term"].astype(str).str.strip().eq(str(var))
                 if mask.any():
                     q1 = pd.to_numeric(df.loc[mask, "q1"], errors="coerce").dropna()
-                    q3 = pd.to_numeric(df.loc[mask, "q3"], errors="coerce").dropna()
-                    if not q1.empty and not q3.empty:
-                        q1v, q3v = float(q1.iloc[0]), float(q3.iloc[0])
-                        # 유효하고 q3 > q1이면 채택, 아니면 기본값
-                        if np.isfinite(q1v) and np.isfinite(q3v) and (q3v > q1v):
-                            return q1v, q3v
+                    q7 = pd.to_numeric(df.loc[mask, "q7"], errors="coerce").dropna()
+                    if not q1.empty and not q7.empty:
+                        q1v, q7v = float(q1.iloc[0]), float(q7.iloc[0])
+                        if np.isfinite(q1v) and np.isfinite(q7v) and (q7v > q1v):
+                            return q1v, q7v
         except Exception:
             pass
-        return default  # 어떤 예외든 기본값으로
+        return default
 
     if "init_ranges" not in st.session_state:
         st.session_state["init_ranges"] = {}
@@ -296,18 +262,18 @@ if uploaded_file is not None:
     for combo in combinations:
         inputs = dict(zip(all_vars, combo))  
         z = intercept
-    # 선형항
+
         for var in all_vars:   
             z += coeffs.get(var, 0) * inputs[var]
-    # 제곱항
+
         for var, base in squared_mapping.items():
             z += coeffs.get(var, 0) * (inputs.get(base, 0) ** 2)
-    # 상호작용항
+
         for var, (var1, var2) in interaction_mapping.items():
             z += coeffs.get(var, 0) * inputs.get(var1, 0) * inputs.get(var2, 0)
 
         z_values.append(z)
-    # z축 조절란 설정
+
     z_min_auto = min(z_values)
     z_max_auto = max(z_values)
 
@@ -317,9 +283,26 @@ if uploaded_file is not None:
     with col_z2:
         z_max_user = st.number_input("종속변수 최대값", value=z_max_auto, key="zmax")
 
-    st.caption(f"초기 종속변수 범위(설명변수 기준) : {z_min_auto:.2f} ~ {z_max_auto:.2f}")
-  
-# 회귀 시각화
+    st.caption(f"종속변수 범위(설명변수 기준) : {z_min_auto:.2f} ~ {z_max_auto:.2f}")
+
+    def fig_to_bytes(fig, fmt="png", dpi=200, transparent=False):
+        buf = BytesIO()
+        fig.savefig(buf, format=fmt, dpi=dpi, bbox_inches="tight", transparent=transparent)
+        buf.seek(0)
+        return buf
+
+    try:
+        font_path = font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+        font_candidates = [f for f in font_path if "NotoSansCJK" in f or "Noto Sans CJK" in f]
+        if font_candidates:
+            matplotlib.rcParams['font.family'] = font_manager.FontProperties(fname=font_candidates[0]).get_name()
+        else:
+            matplotlib.rcParams['font.family'] = 'Malgun Gothic'
+    except:
+        matplotlib.rcParams['font.family'] = 'Malgun Gothic'
+
+    matplotlib.rcParams['axes.unicode_minus'] = False
+
     if model_type == "선형모형":
         if len(base_vars) == 1 and len(dummy_vars) == 0:
             var = base_vars[0]
@@ -534,7 +517,6 @@ if uploaded_file is not None:
             x_star = None
             y_star = None
             extremum_type = None
-            extremum_text = None
             if a != 0:
                 x_star = -b / (2 * a)
                 y_star = a * x_star**2 + b * x_star + c
@@ -557,8 +539,7 @@ if uploaded_file is not None:
             
             ax.ticklabel_format(style='plain', axis='y')
             ax.yaxis.get_offset_text().set_visible(False)
-            
-            # Y값 범위 자동 계산
+
             z_min_auto = min(Y)
             z_max_auto = max(Y)
             z_span = z_max_auto - z_min_auto
@@ -577,7 +558,6 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
-            # 반환점 표시(텍스트): 그래프 아래에서 접었다 펼치기
             if x_star is not None and y_star is not None:
                 with st.expander("반환점(Turning point) 보기", expanded=False):
                     st.markdown(
@@ -593,7 +573,7 @@ if uploaded_file is not None:
                         st.markdown(
                             f"- 현재 설정한 {var} 범위: [{range_min:.2f}, {range_max:.2f}] 밖에 반환점 존재"
                         )
-                    # (선택) 너무 길면 빼도 됨
+
                     st.caption("팁: 반환점 근처로 x 범위를 좁히면 곡률이 더 선명하게 보일 수 있어요")
 
         elif len(base_vars) == 1 and len(dummy_vars) == 1:
@@ -618,7 +598,6 @@ if uploaded_file is not None:
             y0_star = None
             y1_star = None
             extremum_type = None
-            extremum_text = None
             if a != 0:
                 x_star = -b / (2 * a)
                 y0_star = a * x_star**2 + b * x_star + c0
@@ -680,7 +659,7 @@ if uploaded_file is not None:
                         st.markdown(
                             f"- 현재 설정한 {var} 범위: [{range_min:.2f}, {range_max:.2f}] 밖에 반환점 존재"
                         )
-        # (선택) 너무 길면 빼도 됨
+
                     st.caption("팁: 반환점 근처로 x 범위를 좁히면 곡률이 더 선명하게 보일 수 있어요")
 
         elif len(base_vars) == 2 and len(dummy_vars) == 0:
@@ -708,13 +687,11 @@ if uploaded_file is not None:
             x2_star = None
             y_star = None
             extremum_type = None
-            extremum_text = None
             b1 = coeffs.get(var1, 0)
             b2 = coeffs.get(var2, 0)
             c = intercept
             x1_star = -b1 / (2 * a1) if a1 != 0 else None
             x2_star = -b2 / (2 * a2) if a2 != 0 else None
-            extremum_text = None
             if x1_star is not None and x2_star is not None:
                 y_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c
                 range1_min, range1_max = ranges[var1]
@@ -815,7 +792,6 @@ if uploaded_file is not None:
             y0_star = None
             y1_star = None
             extremum_type = None
-            extremum_text = None
             a1 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var1), 0)
             a2 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var2), 0)
             b1 = coeffs.get(var1, 0)
@@ -824,7 +800,6 @@ if uploaded_file is not None:
             c1 = intercept + coeffs.get(dummy_var,0)
             x1_star = -b1 / (2 * a1) if a1 != 0 else None
             x2_star = -b2 / (2 * a2) if a2 != 0 else None
-            extremum_text = None
             if x1_star is not None and x2_star is not None:
                 y0_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c0
                 y1_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c1
@@ -963,7 +938,7 @@ if uploaded_file is not None:
             )
 
 
-        elif len(dummy_vars) == 1 and len(base_vars) == 1: #확인
+        elif len(dummy_vars) == 1 and len(base_vars) == 1:
             var1 = base_vars[0]
             dummy = dummy_vars[0]
             inter_term = interaction_vars[0]
@@ -1138,7 +1113,7 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
-    elif model_type == "제곱항 + 상호작용항 모형": # 확인
+    elif model_type == "제곱항 + 상호작용항 모형":
         if len(dummy_vars) == 1 and len(base_vars) == 1:
             var1 = base_vars[0]
             dummy = dummy_vars[0] if dummy_vars else None
