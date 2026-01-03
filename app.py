@@ -172,7 +172,7 @@ if uploaded_file is not None:
                     var2 = st.selectbox(f"➡️ '{inter_var}'의 두 번째 항", [t for t in interaction_candidates if t != inter_var and t != var1], key=f"inter2_{inter_var}")
                 interaction_mapping[inter_var] = (var1, var2)
 
-    st.markdown("### 📐 회귀분석요약")
+    st.markdown("### ✅ 회귀분석요약")
 
     coef = df[["term","estimate","std.error","p.value","conf.low","conf.high"]].copy()
 
@@ -263,7 +263,7 @@ if uploaded_file is not None:
         z = intercept
 
         for var in all_vars:   
-            z += coeffs.get(var, 0) * inputs[var]
+            z += coeffs.get(var, 0) * inputs.get(var,0)
 
         for var, base in squared_mapping.items():
             z += coeffs.get(var, 0) * (inputs.get(base, 0) ** 2)
