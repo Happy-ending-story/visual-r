@@ -181,8 +181,8 @@ if uploaded_file is not None:
 
     def fmt_p(p):
         if pd.isna(p): return ""
-        if p < 2.2e-16: return "<2.2e-16"
-        return f"{p:.3g}"
+        if p < 0.0001: return "<0.0001"
+        return f"{p:.4f}"
     coef["p.value"] = coef["p.value"].apply(fmt_p)
 
     with st.expander("회귀 요약 (추정값 / 표준오차 / p값 / 95% 신뢰구간)", expanded=False):
