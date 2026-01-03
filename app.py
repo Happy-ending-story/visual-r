@@ -21,7 +21,7 @@ if (!require("dplyr"))  install.packages("dplyr")
 if (!require("readr"))  install.packages("readr")
 library(broom); library(dplyr); library(readr)
 
-if (!exists("model")) stop("먼저 model <- lm(...) 등으로 회귀모형을 적합하세요.")
+if (!exists("model")) stop("먼저 model <- lm(...) 등으로 회귀모형을 설정하세요.")
 
 dep_var <- names(model.frame(model))[1]
 
@@ -176,7 +176,6 @@ if uploaded_file is not None:
 
     coef = df[["term","estimate","std.error","p.value","conf.low","conf.high"]].copy()
 
-    # (선택) 보기 좋게 포맷
     for c in ["estimate","std.error","conf.low","conf.high"]:
         coef[c] = coef[c].round(4)
 
