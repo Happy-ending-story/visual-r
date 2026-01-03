@@ -278,9 +278,9 @@ if uploaded_file is not None:
 
     col_z1, col_z2 = st.columns(2)
     with col_z1:
-        z_min_user = st.number_input("종속변수 최소값", value=z_min_auto, key="zmin")
+        z_min_user = st.number_input("종속변수 최소값", value=z_min_auto)
     with col_z2:
-        z_max_user = st.number_input("종속변수 최대값", value=z_max_auto, key="zmax")
+        z_max_user = st.number_input("종속변수 최대값", value=z_max_auto)
 
     st.caption(f"종속변수 범위(설명변수 기준) : {z_min_auto:.2f} ~ {z_max_auto:.2f}")
 
