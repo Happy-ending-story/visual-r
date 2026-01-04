@@ -510,9 +510,7 @@ if uploaded_file is not None:
             a = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var), 0)
             b = coeffs.get(var, 0)
             c = intercept
-            range_min, range_max = ranges[var]
 
-            plt.rcParams['font.family'] = ['Malgun Gothic', 'DejaVu Sans']
             x_star = None
             y_star = None
             extremum_type = None
@@ -535,9 +533,6 @@ if uploaded_file is not None:
                     bbox=dict(boxstyle="round", facecolor="white", alpha=0.7))
 
             ax.set_title("Regression result")
-            
-            ax.ticklabel_format(style='plain', axis='y')
-            ax.yaxis.get_offset_text().set_visible(False)
 
             z_min_auto = min(Y)
             z_max_auto = max(Y)
@@ -562,7 +557,7 @@ if uploaded_file is not None:
                     st.markdown(
                         f"- **{var} ≈ {x_star:.2f}**에서 **{dep_var} ≈ {y_star:.2f}**으로 **{extremum_type}**"
                     )
-
+                    range_min, range_max = ranges[var]
                     in_range = (range_min <= x_star <= range_max)
                     if in_range:
                         st.markdown(
@@ -590,9 +585,7 @@ if uploaded_file is not None:
             b = coeffs.get(var, 0)
             c0 = intercept
             c1 = intercept + coeffs.get(dummy_var, 0)
-            range_min, range_max = ranges[var]
 
-            plt.rcParams['font.family'] = ['Malgun Gothic', 'DejaVu Sans']
             x_star = None
             y0_star = None
             y1_star = None
@@ -618,9 +611,6 @@ if uploaded_file is not None:
                     bbox=dict(boxstyle="round", facecolor="white", alpha=0.7))
 
             ax.set_title("Regression result")
-
-            ax.ticklabel_format(style='plain', axis='y')
-            ax.yaxis.get_offset_text().set_visible(False)
 
             z_min_auto = min(np.min(Y0), np.min(Y1))
             z_max_auto = max(np.max(Y0), np.max(Y1))
@@ -648,7 +638,7 @@ if uploaded_file is not None:
                     st.markdown(
                         f"- {dummy_var}=1일 경우 **{var} ≈ {x_star:.2f}**에서 **{dep_var} ≈ {y1_star:.2f}**으로 **{extremum_type}**"
                     )
-
+                    range_min, range_max = ranges[var]
                     in_range = (range_min <= x_star <= range_max)
                     if in_range:
                         st.markdown(
@@ -680,8 +670,7 @@ if uploaded_file is not None:
                     Y += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                 elif base == var2:
                     Y += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-            
-            plt.rcParams['font.family'] = ['Malgun Gothic', 'DejaVu Sans']
+
             x1_star = None
             x2_star = None
             y_star = None
@@ -785,7 +774,6 @@ if uploaded_file is not None:
                     Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
                     Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
-            plt.rcParams['font.family'] = ['Malgun Gothic', 'DejaVu Sans']
             x1_star = None
             x2_star = None
             y0_star = None
