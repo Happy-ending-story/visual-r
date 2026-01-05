@@ -445,11 +445,11 @@ if uploaded_file is not None:
             X2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(X1, X2)
 
-            Z0 = (intercept
+            Y0 = (intercept
                  + coeffs.get(var1, 0) * X1_grid
                  + coeffs.get(var2, 0) * X2_grid)
 
-            Z1 = (intercept
+            Y1 = (intercept
                  + coeffs.get(dummy_var, 0)
                  + coeffs.get(var1, 0) * X1_grid
                  + coeffs.get(var2, 0) * X2_grid)
@@ -457,8 +457,8 @@ if uploaded_file is not None:
             fig = plt.figure(constrained_layout=True)
             ax = fig.add_subplot(111, projection='3d')
 
-            ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy_var}=0')
-            ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy_var}=1')
+            ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy_var}=0')
+            ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy_var}=1')
 
             legend_elements = [
                 Line2D([0], [0], marker='o', color='w', label=f"{dummy_var}=0",
@@ -656,14 +656,8 @@ if uploaded_file is not None:
             X1 = np.linspace(*ranges[var1], 50)
             X2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(X1, X2)
-            
-            Y = np.full_like(X1_grid, intercept)
 
-            Y += coeffs.get(var1, 0) * X1_grid
-            Y += coeffs.get(var2, 0) * X2_grid
-            
-            a1 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var1), 0)
-            a2 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var2), 0)
+            Y = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
 
             for sq_var, base in squared_mapping.items():
                 if base == var1:
@@ -675,6 +669,8 @@ if uploaded_file is not None:
             x2_star = None
             y_star = None
             extremum_type = None
+            a1 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var1), 0)
+            a2 = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var2), 0)
             b1 = coeffs.get(var1, 0)
             b2 = coeffs.get(var2, 0)
             c = intercept
@@ -760,11 +756,8 @@ if uploaded_file is not None:
             X2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(X1, X2)
             
-            Y0 = np.full_like(X1_grid, intercept)
-            Y1 = np.full_like(X1_grid, intercept) + coeffs.get(dummy_var,0)
-                
-            Y0 += coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-            Y1 += coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+            Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+            Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy_var,0)
 
             for sq_var, base in squared_mapping.items():
                 if base == var1:
@@ -885,16 +878,15 @@ if uploaded_file is not None:
             X2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(X1, X2)
 
-            Z = np.full_like(X1_grid, intercept)
-            Z += coeffs.get(var1, 0)*X1_grid + coeffs.get(var2, 0)*X2_grid
+            Y = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
 
             for term, (v1, v2) in interaction_mapping.items():
                 if {v1, v2} == {var1, var2}:
-                    Z += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y += coeffs.get(term, 0) * X1_grid * X2_grid
 
             fig = plt.figure(constrained_layout=True)
             ax = fig.add_subplot(111, projection='3d')
-            ax.plot_surface(X1_grid, X2_grid, Z, cmap='viridis', alpha=0.8)
+            ax.plot_surface(X1_grid, X2_grid, Y, cmap='viridis', alpha=0.8)
             ax.set_xlabel(var1)
             ax.set_ylabel(var2)
             ax.text2D(
@@ -923,7 +915,6 @@ if uploaded_file is not None:
                 file_name=f"{dep_var}_plot.png",
                 mime="image/png"
             )
-
 
         elif len(dummy_vars) == 1 and len(base_vars) == 1:
             var1 = base_vars[0]
@@ -981,11 +972,8 @@ if uploaded_file is not None:
             X1_grid, X2_grid = np.meshgrid(x1, x2)
             dummy = dummy_vars[0] if dummy_vars else None
 
-            Z0 = np.full_like(X1_grid, intercept)
-            Z1 = np.full_like(X1_grid, intercept + coeffs.get(dummy, 0))
-
-            Z0 += coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-            Z1 += coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+            Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+            Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
             terms = list(interaction_mapping.keys())
             n = len(terms)
@@ -997,13 +985,13 @@ if uploaded_file is not None:
                 if dummy in (v1, v2):
                     other = v1 if v2 == dummy else v2
                     if other == var1:
-                        Z1 += coeffs.get(term, 0) * X1_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid
                     else:
-                        Z1 += coeffs.get(term, 0) * X2_grid
+                        Y1 += coeffs.get(term, 0) * X2_grid
 
                 else:
-                    Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                    Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
             elif n == 2:
                 dummy_terms = []
@@ -1020,21 +1008,21 @@ if uploaded_file is not None:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
                         
                     for term, v1, v2 in nondummy_terms:
-                        Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                        Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 elif len(dummy_terms) == 2 and len(nondummy_terms) == 0:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
             elif n == 3:
                 dummy_terms = []
@@ -1050,19 +1038,19 @@ if uploaded_file is not None:
                 for term, v1, v2 in dummy_terms:
                     other = (set([v1, v2]) - {dummy}).pop()
                     if other == var1:
-                        Z1 += coeffs.get(term, 0) * X1_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid
                     elif other == var2:
-                        Z1 += coeffs.get(term, 0) * X2_grid
+                        Y1 += coeffs.get(term, 0) * X2_grid
 
                 for term, v1, v2 in nondummy_terms:
-                    Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                    Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
             
             fig = plt.figure(constrained_layout=True)
             ax = fig.add_subplot(111, projection='3d')
 
-            ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-            ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+            ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+            ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
             legend_elements = [
                 Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1158,16 +1146,16 @@ if uploaded_file is not None:
             x2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-            Z = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(inter_term, 0) * X1_grid * X2_grid
+            Y = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(inter_term, 0) * X1_grid * X2_grid
             for sq_var, base in squared_mapping.items():
                 if base == var1:
-                    Z += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                    Y += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                 elif base == var2:
-                    Z += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                    Y += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
             fig = plt.figure(constrained_layout=True)
             ax = fig.add_subplot(111, projection='3d')
-            ax.plot_surface(X1_grid, X2_grid, Z, cmap='viridis', alpha=0.8)
+            ax.plot_surface(X1_grid, X2_grid, Y, cmap='viridis', alpha=0.8)
 
             ax.set_xlabel(var1)
             ax.set_ylabel(var2)
@@ -1209,33 +1197,33 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 if dummy in (v1, v2):
                     other = v1 if v2 == dummy else v2
                     if other == var1:
-                        Z1 += coeffs.get(term, 0) * X1_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid
                     else:
-                        Z1 += coeffs.get(term, 0) * X2_grid
+                        Y1 += coeffs.get(term, 0) * X2_grid
 
                 else:
-                    Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                    Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1284,16 +1272,16 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 for term in interaction_vars:
                     v1, v2 = interaction_mapping[term]
@@ -1306,27 +1294,27 @@ if uploaded_file is not None:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                     for term, v1, v2 in nondummy_terms:
-                        Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                        Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 elif len(dummy_terms) == 2 and len(nondummy_terms) == 0:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1375,16 +1363,16 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 for term in interaction_vars:
                     v1, v2 = interaction_mapping[term]
@@ -1396,19 +1384,19 @@ if uploaded_file is not None:
                 for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                 for term, v1, v2 in nondummy_terms:
-                        Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                        Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1456,33 +1444,33 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 if dummy in (v1, v2):
                     other = v1 if v2 == dummy else v2
                     if other == var1:
-                        Z1 += coeffs.get(term, 0) * X1_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid
                     else:
-                        Z1 += coeffs.get(term, 0) * X2_grid
+                        Y1 += coeffs.get(term, 0) * X2_grid
 
                 else:
-                    Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                    Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                    Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1530,16 +1518,16 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 for term in interaction_vars:
                     v1, v2 = interaction_mapping[term]
@@ -1552,27 +1540,27 @@ if uploaded_file is not None:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                     for term, v1, v2 in nondummy_terms:
-                        Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                        Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 elif len(dummy_terms) == 2 and len(nondummy_terms) == 0:
                     for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
@@ -1620,16 +1608,16 @@ if uploaded_file is not None:
                 x2 = np.linspace(*ranges[var2], 50)
                 X1_grid, X2_grid = np.meshgrid(x1, x2)
 
-                Z0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
-                Z1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
+                Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
+                Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
 
                 for sq_var, base in squared_mapping.items():
                     if base == var1:
-                        Z0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X1_grid ** 2)
                     elif base == var2:
-                        Z0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
-                        Z1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y0 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
+                        Y1 += coeffs.get(sq_var, 0) * (X2_grid ** 2)
 
                 for term in interaction_vars:
                     v1, v2 = interaction_mapping[term]
@@ -1641,19 +1629,19 @@ if uploaded_file is not None:
                 for term, v1, v2 in dummy_terms:
                         other = (set([v1, v2]) - {dummy}).pop()
                         if other == var1:
-                            Z1 += coeffs.get(term, 0) * X1_grid
+                            Y1 += coeffs.get(term, 0) * X1_grid
                         elif other == var2:
-                            Z1 += coeffs.get(term, 0) * X2_grid
+                            Y1 += coeffs.get(term, 0) * X2_grid
 
                 for term, v1, v2 in nondummy_terms:
-                        Z0 += coeffs.get(term, 0) * X1_grid * X2_grid
-                        Z1 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y0 += coeffs.get(term, 0) * X1_grid * X2_grid
+                        Y1 += coeffs.get(term, 0) * X1_grid * X2_grid
 
                 fig = plt.figure(constrained_layout=True)
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.plot_surface(X1_grid, X2_grid, Z0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
-                ax.plot_surface(X1_grid, X2_grid, Z1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
+                ax.plot_surface(X1_grid, X2_grid, Y0, cmap='Blues', alpha=0.6, label=f'{dummy}=0')
+                ax.plot_surface(X1_grid, X2_grid, Y1, cmap='Oranges', alpha=0.6, label=f'{dummy}=1')
 
                 legend_elements = [
                     Line2D([0], [0], marker='o', color='w', label=f'{dummy}=0',
