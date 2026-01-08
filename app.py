@@ -317,7 +317,7 @@ if uploaded_file is not None:
             z_min_auto = min(Y)
             z_max_auto = max(Y)
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
@@ -364,7 +364,7 @@ if uploaded_file is not None:
             z_min_auto = min(np.min(Y0), np.min(Y1))
             z_max_auto = max(np.max(Y0), np.max(Y1))
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
@@ -537,7 +537,7 @@ if uploaded_file is not None:
             z_min_auto = min(Y)
             z_max_auto = max(Y)
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
@@ -615,7 +615,7 @@ if uploaded_file is not None:
             z_min_auto = min(np.min(Y0), np.min(Y1))
             z_max_auto = max(np.max(Y0), np.max(Y1))
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
@@ -949,7 +949,7 @@ if uploaded_file is not None:
             z_min_auto = min(np.min(Y0), np.min(Y1))
             z_max_auto = max(np.max(Y0), np.max(Y1))
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
@@ -1122,7 +1122,7 @@ if uploaded_file is not None:
             z_min_auto = min(np.min(Y0), np.min(Y1))
             z_max_auto = max(np.max(Y0), np.max(Y1))
             z_span = z_max_auto - z_min_auto
-            z_margin = min(0.05 * z_span, 1)
+            z_margin = 0.05 * z_span
 
             if z_max_user > z_min_user:
                 ax.set_ylim(z_min_user - z_margin, z_max_user + z_margin)
