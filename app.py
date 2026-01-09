@@ -504,8 +504,8 @@ if uploaded_file is not None:
             X = np.linspace(*ranges[var], 100)
             Y = intercept + coeffs.get(var, 0) * X
 
-            for var_sq, base in squared_mapping.items():
-                Y += coeffs.get(var_sq, 0) * (X ** 2)
+            for sq_var, base in squared_mapping.items():
+                Y += coeffs.get(sq_var, 0) * (X ** 2)
             
             a = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var), 0)
             b = coeffs.get(var, 0)
@@ -577,9 +577,9 @@ if uploaded_file is not None:
             Y0 = intercept + coeffs.get(var, 0) * X
             Y1 = intercept + coeffs.get(dummy_var, 0) + coeffs.get(var, 0) * X
 
-            for var_sq, base in squared_mapping.items():
-                Y0 += coeffs.get(var_sq, 0) * (X ** 2)
-                Y1 += coeffs.get(var_sq, 0) * (X ** 2)
+            for sq_var, base in squared_mapping.items():
+                Y0 += coeffs.get(sq_var, 0) * (X ** 2)
+                Y1 += coeffs.get(sq_var, 0) * (X ** 2)
             
             a = next((coeffs[sq_var] for sq_var, base in squared_mapping.items() if base == var), 0)
             b = coeffs.get(var, 0)
@@ -678,9 +678,7 @@ if uploaded_file is not None:
             x2_star = -b2 / (2 * a2) if a2 != 0 else None
             if x1_star is not None and x2_star is not None:
                 y_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c
-                range1_min, range1_max = ranges[var1]
-                range2_min, range2_max = ranges[var2]
-                in_range = (range1_min <= x1_star <= range1_max) and (range2_min <= x2_star <= range2_max)
+
                 if a1 > 0 and a2 > 0:
                     extremum_type = "최소"
                 elif a1 < 0 and a2 < 0:
@@ -783,10 +781,7 @@ if uploaded_file is not None:
             if x1_star is not None and x2_star is not None:
                 y0_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c0
                 y1_star = a1 * x1_star**2 + a2 * x2_star**2 + b1 * x1_star + b2 * x2_star + c1
-                
-                range1_min, range1_max = ranges[var1]
-                range2_min, range2_max = ranges[var2]
-                in_range = (range1_min <= x1_star <= range1_max) and (range2_min <= x2_star <= range2_max)
+
                 if a1 > 0 and a2 > 0:
                     extremum_type = "최소"
                 elif a1 < 0 and a2 < 0:
@@ -1093,14 +1088,14 @@ if uploaded_file is not None:
             var1 = base_vars[0]
             dummy = dummy_vars[0] if dummy_vars else None
             inter_term = interaction_vars[0]
-            var_sq = squared_vars[0]
+            sq_var = squared_vars[0]
 
             X = np.linspace(*ranges[var1], 100)
             Y0 = intercept + coeffs.get(var1, 0) * X
             Y1 = intercept + coeffs.get(dummy, 0) + coeffs.get(var1, 0) * X + coeffs.get(inter_term, 0) * X
 
-            Y0 += coeffs.get(var_sq, 0) * (X ** 2)
-            Y1 += coeffs.get(var_sq, 0) * (X ** 2)
+            Y0 += coeffs.get(sq_var, 0) * (X ** 2)
+            Y1 += coeffs.get(sq_var, 0) * (X ** 2)
 
             fig, ax = plt.subplots()
             ax.plot(X, Y0, label=f"{dummy}=0", color="blue")
