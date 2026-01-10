@@ -965,7 +965,7 @@ if uploaded_file is not None:
             x1 = np.linspace(*ranges[var1], 50)
             x2 = np.linspace(*ranges[var2], 50)
             X1_grid, X2_grid = np.meshgrid(x1, x2)
-            dummy = dummy_vars[0] if dummy_vars else None
+            dummy = dummy_vars[0]
 
             Y0 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid
             Y1 = intercept + coeffs.get(var1, 0) * X1_grid + coeffs.get(var2, 0) * X2_grid + coeffs.get(dummy, 0)
