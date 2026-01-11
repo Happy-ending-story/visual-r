@@ -1086,7 +1086,7 @@ if uploaded_file is not None:
     elif model_type == "제곱항 + 상호작용항 모형":
         if len(dummy_vars) == 1 and len(base_vars) == 1:
             var1 = base_vars[0]
-            dummy = dummy_vars[0] if dummy_vars else None
+            dummy = dummy_vars[0]
             inter_term = interaction_vars[0]
             sq_var = squared_vars[0]
 
@@ -1186,7 +1186,7 @@ if uploaded_file is not None:
                 var2 = base_vars[1]
                 term = interaction_vars[0]
                 v1, v2 = interaction_mapping[term]
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
 
                 x1 = np.linspace(*ranges[var1], 50)
                 x2 = np.linspace(*ranges[var2], 50)
@@ -1261,7 +1261,7 @@ if uploaded_file is not None:
                 var2 = base_vars[1]
                 dummy_terms = []
                 nondummy_terms = []
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
 
                 x1 = np.linspace(*ranges[var1], 50)
                 x2 = np.linspace(*ranges[var2], 50)
@@ -1350,7 +1350,7 @@ if uploaded_file is not None:
             elif len(squared_vars) == 1 and len(interaction_vars) == 3:
                 var1 = base_vars[0]
                 var2 = base_vars[1]
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
                 dummy_terms = []
                 nondummy_terms = []
 
@@ -1431,7 +1431,7 @@ if uploaded_file is not None:
             elif len(squared_vars) == 2 and len(interaction_vars) == 1:
                 var1 = base_vars[0]
                 var2 = base_vars[1]
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
                 term = interaction_vars[0]
                 v1, v2 = interaction_mapping[term]
 
@@ -1505,7 +1505,7 @@ if uploaded_file is not None:
             elif len(squared_vars) == 2 and len(interaction_vars) == 2:
                 var1 = base_vars[0]
                 var2 = base_vars[1]
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
                 dummy_terms = []
                 nondummy_terms = []
 
@@ -1595,7 +1595,7 @@ if uploaded_file is not None:
             elif len(squared_vars) == 2 and len(interaction_vars) == 3:
                 var1 = base_vars[0]
                 var2 = base_vars[1]
-                dummy = dummy_vars[0] if dummy_vars else None
+                dummy = dummy_vars[0]
                 dummy_terms = []
                 nondummy_terms = []
 
